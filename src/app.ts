@@ -1,5 +1,4 @@
 // Validation
-
 interface Validatable {
   value: string | number;
   required?: boolean;
@@ -11,7 +10,6 @@ interface Validatable {
 
 function validate(validatableInput: Validatable) {
   let isValid = true;
-
   if (validatableInput.required) {
     isValid = isValid && validatableInput.value.toString().trim().length !== 0;
   }
@@ -30,9 +28,8 @@ function validate(validatableInput: Validatable) {
   return isValid;
 }
 
-//autobind decorator
-
-function Autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
+// autobind decorator
+function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
   const adjDescriptor: PropertyDescriptor = {
     configurable: true,
@@ -44,20 +41,48 @@ function Autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
-//ProjectInput class
+// ProjectList Class
+class ProjectList {
+  templateElement: HTMLTemplateElement;
+  hostElement: HTMLDivElement;
+  element: HTMLElement;
+
+  constructor(private type: 'active' | 'finished') {
+    this.templateElement = document.getElementById('project-list')! as HTMLTemplateElement;
+    this.hostElement = document.getElementById('app')! as HTMLDivElement;
+
+    const importedNode = document.importNode(this.templateElement.content, true);
+    this.element = importedNode.firstElementChild as HTMLElement;
+    this.element.id = `${this.type}-projects`;
+    this.attach();
+    this.renderContent();
+  }
+
+  private renderContent() {
+    const listId = `${this.type}-projects-list`;
+    this.element.querySelector('ul')!.id = listId;
+    this.element.querySelector('h2')!.textContent = this.type.toUpperCase() + ' PROJECTS';
+  }
+
+  private attach() {
+    this.hostElement.insertAdjacentElement('beforeend', this.element);
+  }
+}
+
+// ProjectInput Class
 class ProjectInput {
-  templateElemnt: HTMLTemplateElement;
-  hostElemnt: HTMLDivElement;
+  templateElement: HTMLTemplateElement;
+  hostElement: HTMLDivElement;
   element: HTMLFormElement;
   titleInputElement: HTMLInputElement;
   descriptionInputElement: HTMLInputElement;
   peopleInputElement: HTMLInputElement;
 
   constructor() {
-    this.templateElemnt = document.getElementById('project-input')! as HTMLTemplateElement;
-    this.hostElemnt = document.getElementById('app')! as HTMLDivElement;
+    this.templateElement = document.getElementById('project-input')! as HTMLTemplateElement;
+    this.hostElement = document.getElementById('app')! as HTMLDivElement;
 
-    const importedNode = document.importNode(this.templateElemnt.content, true);
+    const importedNode = document.importNode(this.templateElement.content, true);
     this.element = importedNode.firstElementChild as HTMLFormElement;
     this.element.id = 'user-input';
 
@@ -78,13 +103,11 @@ class ProjectInput {
       value: enteredTitle,
       required: true,
     };
-
     const descriptionValidatable: Validatable = {
       value: enteredDescription,
       required: true,
       minLength: 5,
     };
-
     const peopleValidatable: Validatable = {
       value: +enteredPeople,
       required: true,
@@ -97,7 +120,7 @@ class ProjectInput {
       !validate(descriptionValidatable) ||
       !validate(peopleValidatable)
     ) {
-      alert('Invalid input, please try again');
+      alert('Invalid input, please try again!');
       return;
     } else {
       return [enteredTitle, enteredDescription, +enteredPeople];
@@ -110,7 +133,7 @@ class ProjectInput {
     this.peopleInputElement.value = '';
   }
 
-  @Autobind
+  @autobind
   private submitHandler(event: Event) {
     event.preventDefault();
     const userInput = this.gatherUserInput();
@@ -126,8 +149,10 @@ class ProjectInput {
   }
 
   private attach() {
-    this.hostElemnt.insertAdjacentElement('afterbegin', this.element);
+    this.hostElement.insertAdjacentElement('afterbegin', this.element);
   }
 }
 
 const prjInput = new ProjectInput();
+const activePrjList = new ProjectList('active');
+const finishedPrjList = new ProjectList('finished');
